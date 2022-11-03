@@ -39,13 +39,16 @@ dirs = {pg.K_w: 1, pg.K_s: 1, pg.K_a: 1, pg.K_d: 1}
 food = snake.copy()
 food.center = get_random_position()
 
-#pont kiírás
+# pont kiírás
 pg.init()
 score_value = 0
 font = pg.font.SysFont("verdana", 20)
+
+
 def draw_score():
     score = font.render("Score: " + str(score_value), True, (255, 255, 255))
     screen.blit(score, (10, 5))
+
 
 while True:
     for event in pg.event.get():
