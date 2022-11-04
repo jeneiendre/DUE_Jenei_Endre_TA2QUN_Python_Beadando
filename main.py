@@ -1,100 +1,135 @@
 # Jenei Endre - TA2QUN
-# Python beadandó - Snake Game
+# Python beadando - Snake Game
 
-'''
-A futtatáshoz szükséges a pygame library telepítése (8.4 MB)!
-Terminálba kell a következő parancsot futtatni: pip install pygame
+"""
+A futtatáshoz szükséges a pygame modul telepítése (8.4 MB)!
+De megtalálható futtatható állományként is. (TA2QUN_Snake_beadando.exe)
 
-De megtalálható futtatható állományként is a 'TA2QUN_Python_SnakeGame' könyváron belül (TA2QUN_beadando.exe).
+A kígyó irányítása a 'Fel, Le, Jobbra, Balra' nyilakkal történik.
+"""
 
-A kígyó irányítása a 'WASD' gombokkal történik.
-'''
+import pygame
+import random
+import osztaly
+import fuggveny
 
-import pygame as pg
-from random import randrange
+# Szinek
+red = (255, 0, 0)
+green = (0, 255, 0)
+black = (0, 0, 0)
 
-# random pozíció
-get_random_position = lambda: [randrange(*range), randrange(*range)]
+# Ablak kirajzolasa, cime es icon
+screen_width = 720
+screen_height = 480
+screen = pygame.display.set_mode((screen_width, screen_height))
+pygame.display.set_caption('Jenei Endre (TA2QUN)')
+pygame_icon = pygame.image.load('snake.png')
+pygame.display.set_icon(pygame_icon)
 
-# ablak
-window = 700
-tile_size = 35
-range = (tile_size // 2, window - tile_size // 2, tile_size)
-screen = pg.display.set_mode([window] * 2)
-pg.display.set_caption('Jenei Endre (TA2QUN)')
+# Kigyo peldanyositasa es elhelyezese az ablak kozepen
+snake = osztaly.Snake
+snake_x = screen_width / 2
+snake_y = screen_height / 2
+snake.speed = 15
+snake.size = 10
+snake.length = 1
 
-# idő
-time, time_step = 0, 110
-clock = pg.time.Clock()
+# Kezdoertekek
+apple_x = round(random.randrange(0, screen_width - snake.size) / 10.0) * 10.0
+apple_y = round(random.randrange(0, screen_height - snake.size) / 10.0) * 10.0
+speed_x = 0
+speed_y = 10
 
-# kígyó
-snake = pg.rect.Rect([0, 0, tile_size - 2, tile_size - 2])
-snake.center = get_random_position()
-length = 1
-segments = [snake.copy()]
-snake_dir = (0, 0)
-dirs = {pg.K_w: 1, pg.K_s: 1, pg.K_a: 1, pg.K_d: 1}
+game_over = False
+starting = True
 
-# alma
-food = snake.copy()
-food.center = get_random_position()
+running = True
+clock = pygame.time.Clock()
 
-# pont kiírás
-pg.init()
-score_value = 0
-font = pg.font.SysFont("verdana", 20)
+# A 'running' mindaddig igaz amig a felhasznalo ki nem lep
+while running:
+    # Jatek loop
+    if not game_over:
+        # Kezdokepernyo
+        if starting:
+            screen.fill(green)
+            fuggveny.starting_screen(screen, screen_height, black)
+        # Innen indul a jatek
+        else:
+            screen.fill(black)
 
+            # A kigyo fejet mindig elore helyezi
+            snake_head = [snake_x, snake_y]
+            snake.blocks.append(snake_head)
 
-def draw_score():
-    score = font.render("Score: " + str(score_value), True, (255, 255, 255))
-    screen.blit(score, (10, 5))
+            # Figyeli a kigyo hosszat
+            if len(snake.blocks) > snake.length:
+                del snake.blocks[0]
 
+            # Magabafordulas ellenorzese
+            for x in snake.blocks[:-1]:
+                if x == snake_head:
+                    game_over = True
 
-while True:
-    for event in pg.event.get():
-        if event.type == pg.QUIT:
-            exit()
-        if event.type == pg.KEYDOWN:
-            if event.key == pg.K_w and dirs[pg.K_w]:
-                snake_dir = (0, -tile_size)
-                dirs = {pg.K_w: 1, pg.K_s: 0, pg.K_a: 1, pg.K_d: 1}
-            if event.key == pg.K_s and dirs[pg.K_s]:
-                snake_dir = (0, tile_size)
-                dirs = {pg.K_w: 0, pg.K_s: 1, pg.K_a: 1, pg.K_d: 1}
-            if event.key == pg.K_a and dirs[pg.K_a]:
-                snake_dir = (-tile_size, 0)
-                dirs = {pg.K_w: 1, pg.K_s: 1, pg.K_a: 1, pg.K_d: 0}
-            if event.key == pg.K_d and dirs[pg.K_d]:
-                snake_dir = (tile_size, 0)
-                dirs = {pg.K_w: 1, pg.K_s: 1, pg.K_a: 0, pg.K_d: 1}
-    screen.fill('black')
-    draw_score()
+            # A kigyo blokkjainak kirajzolasa minden pontban ami a jatekose
+            for block in snake.blocks:
+                pygame.draw.rect(screen, green, [block[0], block[1], snake.size, snake.size])
+            # Az elso alma kirajzolasa
+            pygame.draw.rect(screen, red, [apple_x, apple_y, snake.size, snake.size])
 
-    # szélek és magábafordulás figyelése
-    self_eating = pg.Rect.collidelist(snake, segments[:-1]) != -1
-    if snake.left < 0 or snake.right > window or snake.top < 0 or snake.bottom > window or self_eating:
-        snake.center, food.center = get_random_position(), get_random_position()
-        length, snake_dir, score_value = 1, (0, 0), 0
-        segments = [snake.copy()]
+            # Kigyo mozgatasa adott sebesseggel
+            snake_x += speed_x
+            snake_y += speed_y
 
-    # alma felvétel és pontok
-    if snake.center == food.center:
-        food.center = get_random_position()
-        length += 1
-        score_value += 1
+            # Alma felvetele, uj pozicioba helyezese es kigyo hosszanak novelese
+            if snake_x == apple_x and snake_y == apple_y:
+                apple_x = round(random.randrange(0, screen_width - snake.size) / 10.0) * 10.0
+                apple_y = round(random.randrange(0, screen_height - snake.size) / 10.0) * 10.0
+                snake.length += 1
 
-    # alma kirajzolása
-    pg.draw.rect(screen, 'red', food)
+            # A kigyo figyelese, hogy alul vagy felul kimegy-e az ablakbol
+            if (snake_x >= screen_width or snake_x < 0 or
+                    # A kigyo figyelese, hogy jobb vagy baloldal kimegy-e az ablakbol
+                    snake_y >= screen_height or snake_y < 0):
+                game_over = True
 
-    # kígyó kirajzolása
-    [pg.draw.rect(screen, 'green', segment) for segment in segments]
+    # Game over (pontok es utasitasok kiiratasa)
+    else:
+        screen.fill(green)
+        fuggveny.game_over_screen(screen, snake.length, screen_height, black)
 
-    # kígyó mozgatása
-    time_now = pg.time.get_ticks()
-    if time_now - time > time_step:
-        time = time_now
-        snake.move_ip(snake_dir)
-        segments.append(snake.copy())
-        segments = segments[-length:]
-    pg.display.flip()
-    clock.tick(60)
+    # Kepernyo frissitese
+    pygame.display.flip()
+    clock.tick(snake.speed)
+
+    # Esemenyek kezelese
+    for event in pygame.event.get():
+        # 'KEYDOWN' esemenyek kezelese
+        if event.type == pygame.KEYDOWN:
+            # Leallitja a jatekot (Q gomb)
+            if event.key == pygame.K_q:
+                running = False
+            # Ujra inditja a jatekot (Space gomb)
+            if event.key == pygame.K_SPACE:
+                game_over = False
+                starting = False
+                snake_x = screen_width / 2
+                snake_y = screen_height / 2
+                snake.blocks = []
+                snake.length = 1
+            # Mozgas (fel, le, bal, jobb nyilakkal)
+            if event.key == pygame.K_UP:
+                speed_x = 0
+                speed_y = -10
+            if event.key == pygame.K_DOWN:
+                speed_x = 0
+                speed_y = 10
+            if event.key == pygame.K_LEFT:
+                speed_y = 0
+                speed_x = -10
+            if event.key == pygame.K_RIGHT:
+                speed_y = 0
+                speed_x = 10
+        # 'QUIT' esemeny kezelese (Ha X-el lep ki a felhasznalo)
+        if event.type == pygame.QUIT:
+            running = False
