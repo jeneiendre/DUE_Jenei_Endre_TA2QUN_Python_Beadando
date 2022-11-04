@@ -2,10 +2,9 @@
 # Python beadando - Snake Game
 
 """
-A futtatáshoz szükséges a pygame modul telepítése (8.4 MB)!
-De megtalálható futtatható állományként is. (TA2QUN_Snake_beadando.exe)
+A futtatáshoz szükséges a pygame modul telepítése!
 
-A kígyó irányítása a 'Fel, Le, Jobbra, Balra' nyilakkal történik.
+A kígyó irányítása a nyilakkal történik.
 """
 
 import pygame
