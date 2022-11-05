@@ -25,7 +25,7 @@ pygame.display.set_caption('Jenei Endre (TA2QUN)')
 pygame_icon = pygame.image.load('snake.png')
 pygame.display.set_icon(pygame_icon)
 
-# Kigyo peldanyositasa es elhelyezese az ablak kozepen
+# Kigyo peldanyositasa es parametereinek megadasa
 snake = osztaly.Snake
 snake_x = screen_width / 2
 snake_y = screen_height / 2
